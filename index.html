@@ -137,8 +137,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-        // --- PERBAIKAN: Import setPersistence & browserLocalPersistence ---
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        
+        // --- PERBAIKAN IMPORT: Menambahkan signInWithRedirect, getRedirectResult, indexedDBLocalPersistence ---
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, indexedDBLocalPersistence } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4HlorZBNwwHFp8LFi9W6yruxbwKhMMcU",
@@ -155,8 +156,17 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // --- PERBAIKAN: Aktifkan Local Persistence (Agar login awet di HP) ---
-        setPersistence(auth, browserLocalPersistence).catch(err => console.error(err));
+        // --- PERBAIKAN 1: Gunakan indexedDB untuk penyimpanan terdalam di Android ---
+        setPersistence(auth, indexedDBLocalPersistence).catch(err => console.error("Error setting persistence:", err));
+
+        // --- PERBAIKAN 2: Penanganan Jika Aplikasi Dialihkan Kembali (Redirect) ---
+        getRedirectResult(auth).catch((error) => {
+            if (error.code === 'auth/missing-initial-state') {
+                alert("Sistem Keamanan WebView Android memblokir sesi Login Google ini. Solusi Terbaik: Buka otaku-cultivator.vercel.app melalui Google Chrome di HP Anda, lalu pilih 'Tambahkan ke Layar Utama'.");
+            } else {
+                console.error("Redirect Error:", error);
+            }
+        });
 
         let currentUserUid = null;
         let tempImageUrl = '';
@@ -168,9 +178,14 @@
         const loginScreen = document.getElementById('loginScreen');
         const mainApp = document.getElementById('mainApp');
 
+        // --- PERBAIKAN 3: Fallback Cerdas (Popup -> Redirect) ---
         document.getElementById('loginBtn').addEventListener('click', () => {
-            // Tetap menggunakan Popup karena Redirect bermasalah di WebView
-            signInWithPopup(auth, provider).catch(err => alert("Gagal Login: " + err.message));
+            // Coba buka menggunakan Popup terlebih dahulu
+            signInWithPopup(auth, provider).catch(err => {
+                console.warn("Popup diblokir WebView, mencoba Redirect...", err);
+                // Jika sistem WebView memblokir popup, paksa gunakan sistem Redirect
+                signInWithRedirect(auth, provider);
+            });
         });
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
