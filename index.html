@@ -45,20 +45,15 @@
 
     <div id="mainApp" class="max-w-6xl mx-auto w-full hidden fade-in">
         
-        <div class="glass-panel p-3 md:p-4 rounded-xl mb-8 flex justify-end">
-            <div class="top-right-utilities">
-                <div class="profile-info">
-                    <div class="profile-text-container hidden sm:flex">
-                        <p id="userName" class="profile-name"></p>
-                        <p class="profile-role">Cultivator Aktif</p>
-                    </div>
-                    <img id="userAvatar" src="" alt="Profile" class="profile-image">
-                </div>
-                <button id="logoutBtn" class="text-sm bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-lg transition active:scale-95">Logout</button>
-            </div>
+        <div class="flex justify-end items-center mb-6 gap-4">
+            <button id="logoutBtn" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-full transition active:scale-95" title="Logout">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+            
+            <img id="userAvatar" src="" alt="Profile" class="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition ring-2 ring-transparent hover:ring-slate-500">
         </div>
 
-        <header class="mb-10 text-center mt-4 flex flex-col items-center justify-center">
+        <header class="mb-10 text-center mt-2 flex flex-col items-center justify-center">
             <div class="w-20 h-20 md:w-24 md:h-24 mb-4 flex items-center justify-center drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full animate-[spin_20s_linear_infinite]">
                     <defs>
@@ -164,8 +159,11 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
-                document.getElementById('userName').textContent = user.displayName;
-                document.getElementById('userAvatar').src = user.photoURL;
+                
+                // Set gambar avatar dan tooltip nama (Gaya minimalis)
+                const avatarImg = document.getElementById('userAvatar');
+                avatarImg.src = user.photoURL;
+                avatarImg.title = user.displayName + " (Login sebagai)";
                 
                 loginScreen.classList.add('hidden');
                 mainApp.classList.remove('hidden');
